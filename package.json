@@ -1,0 +1,27 @@
+{
+  "name": "identika",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Generador de tarjetas de identidad digital a partir de cuentas conectadas (GitHub, Chess.com, Steam, YouTube y más).",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.114.0",
+    "html-to-image": "^1.11.11",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.15",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.4"
+  }
+}
