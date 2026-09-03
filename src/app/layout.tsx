@@ -13,8 +13,39 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: 'Identika',
-  description: 'Genera una tarjeta de identidad digital a partir de tus cuentas conectadas.',
+  description: 'Escribe tu usuario de GitHub o Chess.com y genera una tarjeta de identidad con tus stats públicas, lista para compartir.',
 };
+
+/**
+ * Contrato de dirección (impeccable, surface scope, seed 86cdb1d5). Se emite como
+ * comentario HTML al principio del <body> para que la revisión de acabado pueda
+ * auditar el build contra él.
+ */
+const DIRECTION_CONTRACT = `
+impeccable direction contract · seed 86cdb1d5 · surface: home · mode: persuade
+
+THESIS: El home no explica el generador, lo somete a un lector de credenciales.
+La línea de escaneo que baja y revela la tarjeta ES la prueba. Rechaza el hero
+dividido con captura estática a la derecha.
+
+OWN-WORLD: Fondo casi negro azulado, superficies "glass" con borde translúcido de
+1px, acento violeta reservado a la línea de escaneo y a los estados vivos; verde
+Chess / violeta GitHub como acento sugerido por plataforma. Space Grotesk display,
+Manrope texto, Space Mono para número de serie y stats. Sin eyebrows.
+
+STORY: El visitante ve una credencial a medio revelar, escribe su usuario, la
+línea baja, su tarjeta aparece por capas y queda con tilt. Entiende en segundos
+que son sus datos públicos hechos carnet; comparte el link o descarga el PNG.
+
+FIRST VIEWPORT: Barra fina (marca izq, Entrar der). Centrado: titular de una
+línea, la "ranura" (toggle de plataforma + input + botón Generar) sobre la zona
+de escaneo, donde una tarjeta de ejemplo está parcialmente revelada con la línea
+en reposo. Acción primaria: el botón Generar, dentro de la ranura.
+
+FORM: Escáner de credenciales, candidato 3 de la lista, seed 86cdb1d5.
+
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,7 +63,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <div hidden dangerouslySetInnerHTML={{ __html: `<!--${DIRECTION_CONTRACT}-->` }} />
+        {children}
+      </body>
     </html>
   );
 }

@@ -36,18 +36,17 @@ New query →** pega el archivo → **Run** (idempotente). Crea la tabla `cards`
 tarjeta compartida, `CardData` en `jsonb`) y las políticas RLS: lectura pública de tarjetas
 `is_public`, alta anónima sin dueño, y reglas de dueño (select/insert/update/delete propio).
 
-**2. Login por email (magic link).** En el dashboard:
-- **Authentication → Providers → Email**: activado (viene por defecto).
-- **Authentication → URL Configuration**:
-  - *Site URL*: `http://localhost:3000`
-  - *Redirect URLs*: añade `http://localhost:3000/**`
-  (en producción se añaden los del dominio real).
-- El email lo manda el SMTP de prueba de Supabase (limitado a unos pocos por hora y puede
-  caer en spam). Para uso real hay que configurar un SMTP propio.
+**2. Login: correo + contraseña, sin correos.** `/entrar` usa `signInWithPassword` /
+`signUp` de Supabase Auth. Para que el registro NO mande ningún correo:
 
-Flujo: `/entrar` → escribes el correo → `signInWithOtp` manda el enlace → el enlace cae en
-`/auth/callback` → se cambia el `code` por sesión → `/mis-tarjetas`. La sesión vive en
-cookies; `src/middleware.ts` la refresca en cada request.
+- **Authentication → Providers → Email** → desactivar **"Confirm email"** → Save.
+
+Con eso, crear cuenta es instantáneo y no hace falta SMTP, ni Resend, ni dominio.
+(No usamos magic link ni OAuth por ahora — el código de ambos está en el historial de git
+si algún día se retoman.)
+
+La sesión vive en cookies; `src/middleware.ts` la refresca en cada request. Al compartir
+una tarjeta con sesión iniciada, queda con `owner_id` y aparece en `/mis-tarjetas`.
 
 ## Cómo correrlo en tu máquina (Windows / PowerShell)
 
@@ -87,10 +86,10 @@ npm run start       # sirve el build de producción
   por ritmo").
 - Supabase: esquema aplicado. Flujo completo probado en navegador — generar → Compartir
   (crea el link, lo copia, lo muestra) → abrir `/c/<slug>` (renderiza la tarjeta compartida).
-- Login: `/entrar` envía el magic link sin error; `/mis-tarjetas` redirige a `/entrar` si no
-  hay sesión; `/auth/callback` sin `code` redirige con aviso. Falta la vuelta completa del
-  enlace del correo (depende de las Redirect URLs del dashboard) y probar "Mis tarjetas" con
-  sesión real.
+- Login: `/entrar` es correo + contraseña (registro y acceso en la misma página, con
+  toggle). `/mis-tarjetas` redirige a `/entrar` sin sesión. Probado en navegador: el
+  registro falla con un aviso claro mientras "Confirm email" siga activado en Supabase;
+  desactivándolo, el registro entra directo. Falta probar "Mis tarjetas" con sesión real.
 - Imagen OpenGraph: `/c/<slug>/opengraph-image` genera un PNG 1200×630 (probado con avatar
   de foto y con logo, y el fallback para slug inexistente). Next.js inyecta los `<meta
   og:image / twitter:image>` solos. Runtime **edge** a propósito: el de Node de `@vercel/og`
@@ -105,8 +104,7 @@ src/
   middleware.ts                    # refresca la sesión de Supabase en cada request
   app/
     page.tsx                       # UI: selector de plataforma, formulario, color, PNG, compartir
-    entrar/page.tsx                # login por email (magic link)
-    auth/callback/route.ts         # cambia el ?code del enlace por una sesión
+    entrar/page.tsx                # login: correo + contraseña (registro y acceso)
     mis-tarjetas/page.tsx          # lista de tarjetas del usuario + borrar (server action)
     c/[slug]/page.tsx              # página pública de una tarjeta compartida
     c/[slug]/opengraph-image.tsx  # imagen de preview del link (1200×630, runtime edge)
@@ -136,8 +134,9 @@ solo necesitan que la plataforma aparezca en `PLATFORM_LABEL` (y en `PLATFORMS` 
 
 ## Qué falta (ver roadmap para el detalle completo)
 
-- Botones "Entrar con GitHub / Google" (además del magic link).
-- SMTP propio para los correos de login (el de prueba de Supabase es muy limitado).
+- Editor de varias tarjetas a la vez (hoy es de una).
 - Editar tarjetas guardadas (hoy se crean y se borran).
 - Rate limiting en `/api/share` y `/api/card` antes de exponerlo públicamente.
+- Página de privacidad y términos.
 - Conectores de Steam, YouTube, Facebook y LinkedIn.
+- Login social (GitHub/Google) o recuperación de contraseña — más adelante, si hace falta.

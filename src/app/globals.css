@@ -1,11 +1,35 @@
+/*
+ * Identika es de un solo tema: credencial "glass" sobre laboratorio oscuro
+ * (compromiso de marca — ver PRODUCT.md). Los tokens viven en :root y todo
+ * se pinta desde ellos.
+ */
 :root {
-  --bg: oklch(10% 0.018 260);
-  --surface: oklch(15% 0.02 260);
-  --border: oklch(100% 0 0 / 10%);
-  --text: oklch(95% 0.01 260);
-  --text-muted: oklch(66% 0.02 260);
-  --accent: oklch(72% 0.16 290);
-  --danger: oklch(68% 0.17 25);
+  color-scheme: dark;
+
+  --bg: oklch(9% 0.018 264);
+  --bg-2: oklch(13% 0.022 264);
+  --surface: oklch(15.5% 0.02 264);
+  --surface-2: oklch(19% 0.022 264);
+  --border: oklch(100% 0 0 / 9%);
+  --border-strong: oklch(100% 0 0 / 16%);
+  --text: oklch(96% 0.01 264);
+  --text-muted: oklch(68% 0.022 264);
+  --text-faint: oklch(52% 0.02 264);
+
+  /* Acento reservado: línea de escaneo y estados vivos. */
+  --accent: oklch(74% 0.15 292);
+  --accent-strong: oklch(80% 0.16 292);
+  --accent-dim: oklch(74% 0.15 292 / 14%);
+
+  --danger: oklch(70% 0.17 25);
+  --danger-dim: oklch(70% 0.17 25 / 14%);
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --radius: 14px;
+  --shadow: 0 1px 2px oklch(0% 0 0 / 0.4), 0 18px 44px oklch(0% 0 0 / 0.34);
 }
 
 * {
@@ -18,13 +42,56 @@ body {
   margin: 0;
 }
 
+html {
+  scrollbar-color: var(--border-strong) transparent;
+}
+
 body {
-  background: radial-gradient(120% 140% at 18% 0%, oklch(20% 0.03 265) 0%, var(--bg) 55%, oklch(7% 0.012 260) 100%);
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 90% at 50% -10%, var(--bg-2) 0%, var(--bg) 46%, oklch(6% 0.014 264) 100%);
+  background-attachment: fixed;
   color: var(--text);
-  font-family: var(--font-body), system-ui, sans-serif;
-  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
-  color: var(--accent);
+  color: var(--accent-strong);
+  text-underline-offset: 3px;
+}
+
+/* Superficies que no dibujamos nosotros, tematizadas desde la paleta. */
+::selection {
+  background: var(--accent);
+  color: oklch(14% 0.02 264);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(100% 0 0 / 0.26);
+}
+
+input {
+  caret-color: var(--accent);
 }

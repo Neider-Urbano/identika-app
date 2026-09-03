@@ -1,7 +1,7 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import Link from 'next/link';
-import { SiteHeader } from '@/components/SiteHeader';
+import { AppShell } from '@/components/AppShell';
 import { createServerSupabase } from '@/lib/supabase-server';
 import { PLATFORM_LABEL, type CardData, type Platform } from '@/lib/connectors/types';
 import styles from './page.module.css';
@@ -20,9 +20,17 @@ async function deleteCard(formData: FormData) {
   'use server';
   const slug = String(formData.get('slug') ?? '');
   if (!slug) return;
+
   const supabase = createServerSupabase();
-  // RLS "cards_delete_owner" garantiza que solo el dueño puede borrarla.
-  await supabase.from('cards').delete().eq('slug', slug);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  // RLS "cards_delete_owner" ya restringe al dueño; el filtro explícito lo hace evidente.
+  const { error } = await supabase.from('cards').delete().eq('slug', slug).eq('owner_id', user.id);
+  if (error) console.error('[mis-tarjetas] borrar:', error);
+
   revalidatePath('/mis-tarjetas');
 }
 
@@ -43,20 +51,32 @@ export default async function MisTarjetasPage() {
   const rows = (data ?? []) as Row[];
 
   return (
-    <>
-      <SiteHeader />
-      <main className={styles.wrap}>
+    <AppShell>
+      <div className={styles.head}>
         <h1 className={styles.title}>Mis tarjetas</h1>
-
-        {error && <p className={styles.note}>No se pudieron cargar tus tarjetas. Recarga la página.</p>}
-
-        {!error && rows.length === 0 && (
-          <p className={styles.note}>
-            Todavía no has guardado ninguna. Genera una en la{' '}
-            <Link href="/">página principal</Link> y pulsa «Compartir».
-          </p>
+        {rows.length > 0 && (
+          <Link href="/crear" className={styles.newBtn}>
+            Crear tarjeta
+          </Link>
         )}
+      </div>
 
+      {error && <p className={styles.note}>No se pudieron cargar tus tarjetas. Recarga la página.</p>}
+
+      {!error && rows.length === 0 && (
+        <div className={styles.empty}>
+          <div className={styles.emptyMark} aria-hidden />
+          <h2 className={styles.emptyTitle}>Aún no tienes tarjetas</h2>
+          <p className={styles.emptyBody}>
+            Genera tu primera credencial con tu usuario de GitHub o Chess.com. Queda guardada aquí.
+          </p>
+          <Link href="/crear" className={styles.newBtn}>
+            Crear tarjeta
+          </Link>
+        </div>
+      )}
+
+      {rows.length > 0 && (
         <ul className={styles.list}>
           {rows.map((row) => {
             const platformLabel = PLATFORM_LABEL[row.platform as Platform] ?? row.platform;
@@ -69,12 +89,7 @@ export default async function MisTarjetasPage() {
                   </span>
                 </div>
                 <div className={styles.actions}>
-                  <a
-                    className={styles.linkBtn}
-                    href={`/c/${row.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a className={styles.linkBtn} href={`/c/${row.slug}`} target="_blank" rel="noreferrer">
                     Ver
                   </a>
                   <form action={deleteCard}>
@@ -88,7 +103,7 @@ export default async function MisTarjetasPage() {
             );
           })}
         </ul>
-      </main>
-    </>
+      )}
+    </AppShell>
   );
 }

@@ -35,3 +35,9 @@ next-env.d.ts
 
 # graphify
 /graphify-out/
+
+# impeccable — artefactos transitorios (la config sí se versiona si existe)
+/.impeccable/review/
+/.impeccable/mocks/
+/.impeccable/questions/
+/.impeccable/decision-*.json

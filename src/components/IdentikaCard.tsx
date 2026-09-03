@@ -9,6 +9,8 @@ interface IdentikaCardProps {
   accent: string;
   /** Se adjunta a la cara que esté visible en este momento — úsalo para exportar a PNG. */
   captureRef?: Ref<HTMLDivElement>;
+  /** false = sin el botón "Ver reverso" (p.ej. cuando la tarjeta va dentro de otro botón). */
+  flipControl?: boolean;
 }
 
 const ICONS: Record<StatIcon, JSX.Element> = {
@@ -52,7 +54,7 @@ function formatDate(iso: string): string {
 /** Patrón decorativo tipo QR — no es un código real, solo referencia visual al perfil. */
 const QR_PATTERN = [1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1];
 
-export function IdentikaCard({ data, accent, captureRef }: IdentikaCardProps) {
+export function IdentikaCard({ data, accent, captureRef, flipControl = true }: IdentikaCardProps) {
   const [side, setSide] = useState<'front' | 'back'>('front');
   const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 50, hover: false });
 
@@ -136,7 +138,7 @@ export function IdentikaCard({ data, accent, captureRef }: IdentikaCardProps) {
                   <svg width={18} height={18} viewBox="0 0 24 24" fill="none" style={{ color: 'var(--idk-accent)', flexShrink: 0 }}>
                     {ICONS[stat.icon]}
                   </svg>
-                  <div>
+                  <div className={styles.idkStatText}>
                     <div className={styles.idkStatVal}>{stat.value}</div>
                     <div className={styles.idkStatLabel}>{stat.label}</div>
                   </div>
@@ -198,9 +200,15 @@ export function IdentikaCard({ data, accent, captureRef }: IdentikaCardProps) {
         )}
       </div>
 
-      <button type="button" className={styles.idkFlipBtn} onClick={() => setSide(side === 'front' ? 'back' : 'front')}>
-        {side === 'front' ? 'Ver reverso' : 'Ver frente'}
-      </button>
+      {flipControl && (
+        <button
+          type="button"
+          className={styles.idkFlipBtn}
+          onClick={() => setSide(side === 'front' ? 'back' : 'front')}
+        >
+          {side === 'front' ? 'Ver reverso' : 'Ver frente'}
+        </button>
+      )}
     </div>
   );
 }

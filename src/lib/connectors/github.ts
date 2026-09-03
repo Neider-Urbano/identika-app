@@ -180,7 +180,7 @@ export async function fetchGithubCard(username: string): Promise<CardData> {
     { key: 'repos', label: 'Repos', value: formatCompact(user.public_repos), icon: 'repo' },
     { key: 'stars', label: 'Estrellas', value: formatCompact(totalStars), icon: 'star' },
     topLanguage
-      ? { key: 'language', label: 'Lenguaje top', value: `${topLanguage.name} · ${topLanguage.percent}%`, icon: 'language' }
+      ? { key: 'language', label: topLanguage.name, value: `${topLanguage.percent}%`, icon: 'language' }
       : { key: 'followers', label: 'Seguidores', value: formatCompact(user.followers), icon: 'trophy' },
   ];
 

@@ -12,6 +12,7 @@
   --idk-accent: #8b7bff;
   width: 100%;
   aspect-ratio: 600 / 372;
+  container-type: inline-size;
   border-radius: 22px;
   position: relative;
   padding: 5.5% 5%;
@@ -208,6 +209,11 @@
   min-width: 0;
 }
 
+.idkStatText {
+  min-width: 0;
+  overflow: hidden;
+}
+
 .idkStatVal {
   font-family: 'Space Grotesk', system-ui, sans-serif;
   font-size: 16px;
@@ -216,6 +222,34 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* La tarjeta se muestra a varios tamaños (generador ~530px, galería ~440px, OG).
+   El container query mide el content-box de .idkCard (~90% del ancho visible). */
+@container (max-width: 470px) {
+  .idkStat {
+    gap: 7px;
+    padding: 9px 9px;
+  }
+  .idkStatVal {
+    font-size: 13.5px;
+  }
+  .idkStatLabel {
+    font-size: 9px;
+    letter-spacing: 0.03em;
+  }
+}
+
+/* Solo en tamaños pequeños (galería, móvil): 2x2 en vez de una fila apretada,
+   y la tarjeta deja de forzar la proporción para no recortar contenido. */
+@container (max-width: 400px) {
+  .idkStats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .idkCard {
+    aspect-ratio: auto;
+    padding-bottom: 6.5%;
+  }
 }
 
 .idkStatLabel {
@@ -332,11 +366,22 @@
   color: var(--idk-accent);
 }
 
-@media (max-width: 460px) {
+/* Adaptación por ancho real de la tarjeta (container), no del viewport. */
+@container (max-width: 440px) {
   .idkName {
     font-size: 20px;
   }
-  .idkStats {
-    grid-template-columns: 1fr;
+}
+
+@container (max-width: 330px) {
+  .idkName {
+    font-size: 16px;
+  }
+  .idkHandle {
+    font-size: 11px;
+  }
+  /* Sin espacio para el QR: se cede a favor del nombre. */
+  .idkQrCol {
+    display: none;
   }
 }

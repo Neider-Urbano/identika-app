@@ -1,0 +1,110 @@
+.chamber {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 22px;
+  isolation: isolate;
+}
+
+/* Marcas de esquina del lector — como el encuadre de un escáner de documentos. */
+.bracket {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid color-mix(in oklch, var(--scan-accent, #a78bfa) 55%, transparent);
+  pointer-events: none;
+}
+.bracket[data-corner='tl'] { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.bracket[data-corner='tr'] { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.bracket[data-corner='bl'] { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.bracket[data-corner='br'] { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+.reveal {
+  position: relative;
+  will-change: clip-path, opacity;
+}
+
+.revealing {
+  animation: scan-reveal 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Estado en reposo: la tarjeta casi completa, con un desvanecido corto abajo. */
+.idle {
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 99%);
+  mask-image: linear-gradient(to bottom, #000 78%, transparent 99%);
+}
+
+@keyframes scan-reveal {
+  from { clip-path: inset(0 0 100% 0); opacity: 0.35; }
+  55%  { opacity: 1; }
+  to   { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+/* Línea que baja durante el barrido. */
+.scanline {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--scan-accent, #a78bfa) 25%,
+    color-mix(in oklch, var(--scan-accent, #a78bfa) 40%, white) 50%,
+    var(--scan-accent, #a78bfa) 75%,
+    transparent
+  );
+  box-shadow:
+    0 0 22px 3px color-mix(in oklch, var(--scan-accent, #a78bfa) 55%, transparent),
+    0 8px 26px 0 color-mix(in oklch, var(--scan-accent, #a78bfa) 22%, transparent);
+  animation: scan-line 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes scan-line {
+  from { top: 22px; opacity: 0; }
+  10%  { opacity: 1; }
+  82%  { opacity: 1; }
+  to   { top: calc(100% - 22px); opacity: 0; }
+}
+
+/* Línea en reposo para el estado idle: se queda en el borde del recorte y respira. */
+.restLine {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 82%;
+  height: 2px;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--scan-accent, #a78bfa) 30%,
+    color-mix(in oklch, var(--scan-accent, #a78bfa) 40%, white) 50%,
+    var(--scan-accent, #a78bfa) 70%,
+    transparent
+  );
+  box-shadow: 0 0 24px 3px color-mix(in oklch, var(--scan-accent, #a78bfa) 55%, transparent);
+  animation: rest-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes rest-pulse {
+  0%, 100% { opacity: 0.55; transform: translateY(0); }
+  50%      { opacity: 1; transform: translateY(-2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revealing { animation: scan-fade 260ms ease-out both; }
+  .scanline { display: none; }
+  .restLine { animation: none; opacity: 0.7; }
+}
+
+@keyframes scan-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

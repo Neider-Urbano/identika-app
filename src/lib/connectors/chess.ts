@@ -141,7 +141,7 @@ export async function fetchChessCard(username: string): Promise<CardData> {
   if (totalGames > 0) {
     stats_.push({
       key: 'winrate',
-      label: '% Victorias',
+      label: 'Victorias',
       value: `${Math.round((totalWins / totalGames) * 100)}%`,
       icon: 'star',
     });

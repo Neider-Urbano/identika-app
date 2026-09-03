@@ -1,77 +1,130 @@
 'use client';
 
 import { Suspense, useState, type FormEvent } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserSupabase } from '@/lib/supabase-client';
 import styles from './page.module.css';
 
+type Mode = 'signin' | 'signup';
+
 function EntrarForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next') ?? '/mis-tarjetas';
-  const linkError = searchParams.get('error');
 
+  const [mode, setMode] = useState<Mode>('signin');
   const [email, setEmail] = useState('');
-  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const [message, setMessage] = useState<string | null>(null);
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
+  function goNext() {
+    router.push(next.startsWith('/') ? next : '/mis-tarjetas');
+    router.refresh();
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const trimmed = email.trim();
-    if (!trimmed) return;
+    const mail = email.trim();
+    if (!mail || password.length < 6) return;
 
-    setState('sending');
-    setMessage(null);
-
+    setBusy(true);
+    setError(null);
+    setInfo(null);
     const supabase = createBrowserSupabase();
-    const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-    const { error } = await supabase.auth.signInWithOtp({ email: trimmed, options: { emailRedirectTo } });
 
-    if (error) {
-      setState('error');
-      setMessage(error.message);
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email: mail, password });
+      setBusy(false);
+      if (error) {
+        setError(
+          error.message.toLowerCase().includes('invalid')
+            ? 'Correo o contraseña incorrectos.'
+            : error.message,
+        );
+        return;
+      }
+      goNext();
       return;
     }
-    setState('sent');
+
+    // signup
+    const { data, error } = await supabase.auth.signUp({ email: mail, password });
+    setBusy(false);
+    if (error) {
+      // Pasa cuando "Confirm email" sigue activado en Supabase y no hay SMTP.
+      setError(
+        /confirmation email|sending/i.test(error.message)
+          ? 'No se pudo crear la cuenta. Desactiva «Confirm email» en Supabase → Authentication → Providers → Email.'
+          : error.message,
+      );
+      return;
+    }
+    if (data.session) {
+      goNext();
+    } else {
+      // "Confirm email" sigue activado en Supabase.
+      setInfo('Cuenta creada. Revisa tu correo para confirmarla y luego entra.');
+      setMode('signin');
+    }
   }
 
   return (
     <main className={styles.wrap}>
       <p className={styles.eyebrow}>Identika</p>
-      <h1 className={styles.title}>Entrar</h1>
+      <h1 className={styles.title}>{mode === 'signin' ? 'Entrar' : 'Crear cuenta'}</h1>
       <p className={styles.lede}>
-        Sin contraseñas. Escribe tu correo y te enviamos un enlace para entrar. Al hacer clic quedas dentro.
+        {mode === 'signin'
+          ? 'Entra con tu correo y contraseña para ver y guardar tus tarjetas.'
+          : 'Solo necesitas un correo y una contraseña de al menos 6 caracteres.'}
       </p>
 
-      {linkError && (
-        <div className={styles.error}>
-          El enlace no era válido o ya se usó. Pide uno nuevo.
-        </div>
-      )}
+      {info && <div className={styles.info}>{info}</div>}
 
-      {state === 'sent' ? (
-        <div className={styles.sent}>
-          <strong>Revisa tu correo.</strong>
-          <span>Te enviamos un enlace a {email}. Ábrelo en este mismo dispositivo.</span>
-        </div>
-      ) : (
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <input
-            className={styles.input}
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="tucorreo@ejemplo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <button className={styles.button} type="submit" disabled={state === 'sending' || !email.trim()}>
-            {state === 'sending' ? 'Enviando…' : 'Enviar enlace'}
-          </button>
-        </form>
-      )}
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <input
+          className={styles.input}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          placeholder="tucorreo@ejemplo.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          className={styles.input}
+          type="password"
+          autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+          placeholder="Contraseña"
+          minLength={6}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button
+          className={styles.button}
+          type="submit"
+          disabled={busy || !email.trim() || password.length < 6}
+        >
+          {busy ? 'Un momento…' : mode === 'signin' ? 'Entrar' : 'Crear cuenta'}
+        </button>
+      </form>
 
-      {state === 'error' && message && <div className={styles.error}>{message}</div>}
+      {error && <div className={styles.error}>{error}</div>}
+
+      <button
+        type="button"
+        className={styles.switch}
+        onClick={() => {
+          setMode(mode === 'signin' ? 'signup' : 'signin');
+          setError(null);
+          setInfo(null);
+        }}
+      >
+        {mode === 'signin' ? '¿No tienes cuenta? Crear una' : '¿Ya tienes cuenta? Entrar'}
+      </button>
     </main>
   );
 }

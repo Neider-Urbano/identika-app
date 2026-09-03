@@ -1,0 +1,92 @@
+.root {
+  position: relative;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background:
+    radial-gradient(120% 120% at 30% 20%, oklch(72% 0.13 var(--h)), oklch(52% 0.14 var(--h)));
+  color: oklch(18% 0.03 var(--h));
+  font: 700 14px/1 var(--font-display);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: box-shadow 0.14s;
+}
+
+.avatar:hover {
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 220px;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 20;
+}
+
+.email {
+  padding: 8px 12px 10px;
+  font-size: 12px;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: none;
+  background: none;
+  color: var(--text);
+  font: 500 13.5px/1 var(--font-body);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.item:hover {
+  background: var(--surface);
+  color: var(--accent-strong);
+}
+
+.signOut {
+  color: var(--text-muted);
+}
+
+.signOut:hover {
+  color: var(--danger);
+  background: var(--danger-dim);
+}
+
+.cta {
+  color: var(--accent-strong);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+}
+
+.cta:hover {
+  border-color: var(--accent);
+}
